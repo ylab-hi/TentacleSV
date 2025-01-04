@@ -1,0 +1,27 @@
+name: tentaclesv
+channels:
+  - bioconda  # Primary channel for bioinformatics tools
+  - conda-forge  # General dependencies
+  - defaults  # Basic Python packages
+dependencies:
+  # Core requirements
+  - snakemake-minimal
+  - pandas
+  
+  # Mapping tools
+  - bwa-mem2  # For short reads
+  - minimap2  # For long reads
+  - samtools  # BAM file processing
+  
+  # SV callers - short read
+  - manta
+  - delly
+  - lumpy
+  - svaba
+  
+  # SV callers - long read
+  - cutesv
+  - pbsv
+  - sniffles2
+  - svim
+  - svdss

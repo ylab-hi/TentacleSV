@@ -1,0 +1,45 @@
+# General settings
+seq_type: "short"  # Sequencing type: "short" or "long"
+reference: "path/to/reference.fa"
+
+# Input files
+samples:
+  sample1:  # Sample identifier
+    fq1: "data/sample1_1.fq.gz"  # For paired-end short reads
+    fq2: "data/sample1_2.fq.gz"
+  sample2:  # Another sample using BAM
+    bam: "data/sample2.bam"
+
+# SV callers configuration
+callers:
+  short_read: 
+    - "manta"
+    - "delly"
+    - "lumpy"
+    - "svaba"
+  long_read:
+    - "cutesv"
+    - "pbsv"
+    - "sniffles2"
+    - "svim"
+    - "debreak"
+    - "svdss"
+
+# OctopusV BND correction parameters
+correct:
+  pos_tolerance: 3  # Position tolerance for identifying mate BND events
+
+# OctopusV merge parameters
+merge:
+  min_support: 2  # Minimum number of callers supporting an SV
+  max_distance: 50  # Maximum distance between breakpoints
+  max_length_ratio: 1.3  # Maximum ratio between SV lengths
+  min_jaccard: 0.7  # Minimum Jaccard similarity
+  tra_delta: 50  # Position uncertainty for translocations
+  tra_min_overlap: 0.5  # Minimum overlap for translocations
+  tra_strand_consistency: true  # Require strand consistency for translocations
+
+# Output settings
+output:
+  directory: "results"  # Output directory
+  upset_plot: true  # Generate UpSet plot visualization

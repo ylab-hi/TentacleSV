@@ -1,0 +1,10 @@
+.snakemake/
+.DS_Store
+__pycache__/
+logs/
+results/
+*.bam
+*.bai
+*.vcf
+*.vcf.gz
+*.tbi

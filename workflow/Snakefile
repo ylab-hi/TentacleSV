@@ -1,0 +1,16 @@
+# Main Snakefile for TentacleSV workflow
+configfile: "config/config.yaml"
+
+# Import modular rule files
+include: "rules/common.smk"
+include: "rules/mapping.smk"
+include: "rules/sv_calling.smk"
+include: "rules/merge.smk"
+
+# Select appropriate callers based on sequencing type
+CALLERS = config["callers"]["short_read"] if config["seq_type"] == "short" else config["callers"]["long_read"]
+
+# Define the final output target
+rule all:
+    input:
+        "results/final_svs.vcf"  # Final merged and filtered SV calls

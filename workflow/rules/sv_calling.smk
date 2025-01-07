@@ -1,5 +1,23 @@
 # Rules for structural variant calling
 
+# Helper function to get tandem repeats file path
+def get_tandem_repeats():
+    """Get tandem repeats file path if available."""
+    return config["reference"].get("tandem_repeats", "")
+
+# Helper function to construct tool-specific arguments
+def get_tr_argument(wildcards, tool):
+    """Get tool-specific tandem repeats argument."""
+    tr_path = get_tandem_repeats()
+    if not tr_path:
+        return ""
+    
+    if tool == "sniffles":
+        return f"--tandem-repeats {tr_path}"
+    elif tool == "pbsv":
+        return f"--tandem-repeats {tr_path}"
+    return ""
+
 # Short-read callers
 rule run_manta:
     input:
@@ -8,6 +26,8 @@ rule run_manta:
         ref = config["reference"]["fasta"]
     output:
         vcf = "results/sv_calls/manta/{sample}.vcf"
+    container:
+        config["containers"]["manta"]  # Use container instead of conda
     log:
         "logs/manta/{sample}.log"
     threads: config["threads"]
@@ -27,7 +47,7 @@ rule run_manta:
         $TMPDIR/runWorkflow.py -j {threads} 2>> {log}
         
         # Move and clean up results
-        mv $TMPDIR/results/variants/tumorSV.vcf.gz {output.vcf}.gz
+        mv $TMPDIR/results/variants/diploidSV.vcf.gz {output.vcf}.gz
         gunzip {output.vcf}.gz
         rm -rf $TMPDIR
         """
@@ -39,6 +59,8 @@ rule run_delly:
         ref = config["reference"]["fasta"]
     output:
         vcf = "results/sv_calls/delly/{sample}.vcf"
+    conda:
+        "../../envs/environment.full.yaml"
     log:
         "logs/delly/{sample}.log"
     threads: config["threads"]
@@ -65,12 +87,13 @@ rule run_lumpy:
         bai = "results/mapped/{sample}.bam.bai"
     output:
         vcf = "results/sv_calls/lumpy/{sample}.vcf"
+    container:
+        config["containers"]["lumpy"]  # Use container instead of conda
     log:
         "logs/lumpy/{sample}.log"
     threads: config["threads"]
     shell:
         """
-        # Run LUMPY
         lumpyexpress \
             -B {input.bam} \
             -o {output.vcf} \
@@ -84,6 +107,8 @@ rule run_svaba:
         ref = config["reference"]["fasta"]
     output:
         vcf = "results/sv_calls/svaba/{sample}.vcf"
+    conda:
+        "../../envs/environment.full.yaml"
     log:
         "logs/svaba/{sample}.log"
     threads: config["threads"]
@@ -97,7 +122,7 @@ rule run_svaba:
             -G {input.ref} \
             2> {log}
             
-        # Move and rename output
+        # Move output to final location
         mv svaba_out.sv.vcf {output.vcf}
         """
 
@@ -109,6 +134,8 @@ rule run_cutesv:
         ref = config["reference"]["fasta"]
     output:
         vcf = "results/sv_calls/cutesv/{sample}.vcf"
+    conda:
+        "../../envs/environment.full.yaml"
     log:
         "logs/cutesv/{sample}.log"
     threads: config["threads"]
@@ -138,10 +165,13 @@ rule run_sniffles:
     input:
         bam = "results/mapped/{sample}.bam",
         bai = "results/mapped/{sample}.bam.bai",
-        ref = config["reference"]["fasta"],
-        tr = config["reference"]["tandem_repeats"]
+        ref = config["reference"]["fasta"]
     output:
         vcf = "results/sv_calls/sniffles/{sample}.vcf"
+    params:
+        tr_arg = lambda wildcards: get_tr_argument(wildcards, "sniffles")
+    conda:
+        "../../envs/environment.full.yaml"
     log:
         "logs/sniffles/{sample}.log"
     threads: config["threads"]
@@ -150,8 +180,8 @@ rule run_sniffles:
         sniffles \
             --input {input.bam} \
             --vcf {output.vcf} \
-            --tandem-repeats {input.tr} \
             --reference {input.ref} \
+            {params.tr_arg} \
             --minsupport auto \
             --minsvlen 50 \
             --threads {threads} \
@@ -165,24 +195,26 @@ rule run_svim:
         ref = config["reference"]["fasta"]
     output:
         vcf = "results/sv_calls/svim/{sample}.vcf"
+    conda:
+        "../../envs/environment.full.yaml"
     log:
         "logs/svim/{sample}.log"
     shell:
         """
+        # Create temporary directory for SVIM
         TMPDIR=$(mktemp -d)
         
+        # Run SVIM alignment mode
         svim alignment \
             $TMPDIR \
             {input.bam} \
             {input.ref} \
             2> {log}
             
-        # Filter and move results
-        filter_vcf_based_on_quality.py \
-            $TMPDIR/variants.vcf \
-            10 > {output.vcf} \
-            2>> {log}
-            
+        # Move results
+        mv $TMPDIR/variants.vcf {output.vcf} 2>> {log}
+        
+        # Clean up temporary directory
         rm -rf $TMPDIR
         """
 
@@ -190,11 +222,14 @@ rule run_pbsv:
     input:
         bam = "results/mapped/{sample}.bam",
         bai = "results/mapped/{sample}.bam.bai",
-        ref = config["reference"]["fasta"],
-        tr = config["reference"]["tandem_repeats"]
+        ref = config["reference"]["fasta"]
     output:
         vcf = "results/sv_calls/pbsv/{sample}.vcf",
         svsig = temp("results/sv_calls/pbsv/{sample}.svsig.gz")
+    params:
+        tr_arg = lambda wildcards: get_tr_argument(wildcards, "pbsv")
+    conda:
+        "../../envs/environment.full.yaml"
     log:
         "logs/pbsv/{sample}.log"
     threads: config["threads"]
@@ -202,7 +237,7 @@ rule run_pbsv:
         """
         # Discover signatures
         pbsv discover \
-            --tandem-repeats {input.tr} \
+            {params.tr_arg} \
             {input.bam} \
             {output.svsig} \
             2> {log}
@@ -226,29 +261,31 @@ rule run_svdss:
         smooth_bam = temp("results/sv_calls/svdss/{sample}.smooth.bam"),
         smooth_bai = temp("results/sv_calls/svdss/{sample}.smooth.bam.bai"),
         specifics = temp("results/sv_calls/svdss/{sample}.specifics.txt")
+    conda:
+        "../../envs/environment.full.yaml"
     log:
         "logs/svdss/{sample}.log"
     threads: config["threads"]
     shell:
         """
-        # Smooth BAM
+        # Step 1: Smooth BAM file
         SVDSS smooth \
             --threads {threads} \
             --bam {input.bam} \
             --reference {input.ref} > {output.smooth_bam} \
             2> {log}
             
-        # Index smoothed BAM
+        # Step 2: Index smoothed BAM
         samtools index {output.smooth_bam} {output.smooth_bai}
         
-        # Search for SVs
+        # Step 3: Search for SVs
         SVDSS search \
             --threads {threads} \
-            --index {input.ref}.fmd \
+            --index {input.ref} \
             --bam {output.smooth_bam} > {output.specifics} \
             2>> {log}
             
-        # Call variants
+        # Step 4: Call variants
         SVDSS call \
             --reference {input.ref} \
             --bam {output.smooth_bam} \
@@ -263,11 +300,14 @@ rule run_debreak:
         ref = config["reference"]["fasta"]
     output:
         vcf = "results/sv_calls/debreak/{sample}.vcf"
+    container:
+        config["containers"]["debreak"]  # Use container instead of conda
     log:
         "logs/debreak/{sample}.log"
     threads: config["threads"]
     shell:
         """
+        # Run Debreak with optimized parameters
         debreak \
             --min_support 2 \
             -t {threads} \
@@ -278,6 +318,9 @@ rule run_debreak:
             --poa \
             --ref {input.ref} \
             2> {log}
+
+        # Move VCF to final location
+        mv debreak.vcf {output.vcf} 2>> {log}
             
         # Clean up temporary files
         rm -rf debreak-* \

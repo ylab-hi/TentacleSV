@@ -6,13 +6,12 @@ min_version("6.0.0")
 
 # Load configuration
 configfile: "config/config.yaml"
-configfile: "config/caller_params.yaml"
 
 # Import helper modules
-include: "workflow/rules/common.smk"
-include: "workflow/rules/mapping.smk"
-include: "workflow/rules/sv_calling.smk"
-include: "workflow/rules/merge.smk"
+include: "rules/common.smk"
+include: "rules/mapping.smk"
+include: "rules/sv_calling.smk"
+include: "rules/merge.smk"
 
 # Generate list of final output files
 def get_final_outputs():
@@ -23,44 +22,9 @@ def get_final_outputs():
         expand("results/merged/{sample}.vcf", sample=SAMPLES)
     )
     
-    # Add UpSet plots if enabled
-    if config["output"]["upset_plot"]:
-        final_outputs.extend(
-            expand("results/plots/{sample}_upset.png", sample=SAMPLES)
-        )
-    
     return final_outputs
 
 # Default rule
 rule all:
     input:
         get_final_outputs()
-
-# Clean up intermediate files
-rule clean:
-    shell:
-        """
-        rm -rf results/mapped/*.raw.bam
-        rm -rf results/sv_calls/*/tmp_*
-        rm -rf results/corrected/tmp_*
-        """
-
-# Generate workflow report
-rule report:
-    input:
-        get_final_outputs()
-    output:
-        "results/report.html"
-    run:
-        from snakemake.utils import report
-        report("""
-        # TentacleSV Analysis Report
-        
-        ## Pipeline Summary
-        - Total samples processed: {len(SAMPLES)}
-        - Sequencing type: {config['seq_type']}
-        - Callers used: {', '.join(CALLERS)}
-        
-        ## Sample Details
-        {sample_details}
-        """)

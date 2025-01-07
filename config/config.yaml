@@ -1,43 +1,33 @@
 # General settings
-seq_type: "short"  # Sequencing type: "short", "long_ont", or "long_pacbio"
-threads: 8         # Default number of threads for parallel processing
-memory_gb: 16      # Default memory allocation in GB
+seq_type: "long_pacbio"
+threads: 12
 
 # Reference genome settings
 reference:
-  fasta: "path/to/reference.fa"
-  index: "path/to/reference.index"
-  tandem_repeats: "path/to/tandem_repeats.bed"  # Required for some callers
+  fasta: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/GRCh38.p13.genome.fa"
+  minimap2_index: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/minimap2_index/GRCh38.p13.genome.mmi"
+  tandem_repeats: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/tandem_repeats/human_GRCh38_no_alt_analysis_set.trf.bed"
 
-# Input samples configuration
+# Input samples
 samples:
-  sample1:
-    type: "paired"  # paired, single, or bam
-    fq1: "data/sample1_R1.fq.gz"
-    fq2: "data/sample1_R2.fq.gz"
-    platform: "illumina"
-  sample2:
-    type: "bam"
-    bam: "data/sample2.bam"
+  test_sample:
+    type: "single"
+    fq1: "/projects/b1171/qgn1237/6_SV_VCF_merger/20241113_octopusv_final_benchmarking/Simulation_data/pacbio_simulated_100VAF/pacbio_fastq/test.fastq"
     platform: "pacbio"
+
+# Container settings
+containers:
+  manta: "containers/images/manta.sif"
+  lumpy: "containers/images/lumpy-sv.sif"
+  debreak: "containers/images/debreak.sif"
 
 # SV callers selection
 callers:
-  short_read:
-    - "manta"
-    - "delly"
-    - "lumpy"
-    - "svaba"
-  long_read_ont:
-    - "cutesv"
-    - "sniffles2"
-    - "svim"
-    - "svdss"
   long_read_pacbio:
     - "cutesv"
-    - "pbsv"
-    - "sniffles2"
+    - "sniffles"
     - "svim"
+    - "pbsv"
     - "debreak"
     - "svdss"
 
@@ -80,3 +70,4 @@ output:
   cleanup_intermediates: true
   generate_reports: true
   upset_plot: true
+

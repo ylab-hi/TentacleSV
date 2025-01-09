@@ -4,18 +4,19 @@ threads: 12
 
 # Reference genome settings (keeping the same as long-read config)
 reference:
-  fasta: "/projects/b1171/qgn1237/1_my_database/GRCh37_hs37d5/hs37d5.fa"
+  fasta: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/GRCh38.p13.genome.fa"
+  minimap2_index: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/minimap2_index/GRCh38.p13.genome.mmi"
+  tandem_repeats: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/tandem_repeats/human_GRCh38_no_alt_analysis_set.trf.bed"
   # Add BWA-MEM2 index path if available
   bwa_index: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/GRCh38.p13.genome"
 
 # Input samples
 samples:
   test_sample:
-    type: "bam"  
-    bam: "/projects/b1171/qgn1237/2_raw_data/20241126_NA12878_HG001_NGS_pacbio/NIST_NA12878_HG001_HiSeq_300x/merge_bam_40x/merged.bam"
-    platform: "illumina"  
-
-
+    type: "paired"  # Changed to paired for paired-end reads
+    fq1: "/projects/b1171/qgn1237/6_SV_VCF_merger/20241113_octopusv_final_benchmarking/Simulation_data/NGS_simulated_100VAF/NGS_fastq/subset_r1.fq"
+    fq2: "/projects/b1171/qgn1237/6_SV_VCF_merger/20241113_octopusv_final_benchmarking/Simulation_data/NGS_simulated_100VAF/NGS_fastq/subset_r2.fq"
+    platform: "illumina"  # Changed to illumina for short reads
 
 # Container settings
 containers:

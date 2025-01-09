@@ -3,7 +3,7 @@ import os
 from snakemake.utils import validate
 from snakemake.utils import min_version
 
-# Set minimum snakemake version
+# Set minimum required Snakemake version
 min_version("6.0.0")
 
 # Create required directories
@@ -16,6 +16,13 @@ SAMPLES = list(config["samples"].keys())
 
 # Helper function to get input files
 def get_input_files(wildcards):
+    """
+    Determine input files based on sample type (single/paired/bam)
+    Args:
+        wildcards: Snakemake wildcards
+    Returns:
+        str or list: Path(s) to input file(s)
+    """
     sample_config = config["samples"][wildcards.sample]
     if sample_config["type"] == "single":
         return sample_config["fq1"]
@@ -26,8 +33,24 @@ def get_input_files(wildcards):
     else:
         raise ValueError(f"Unknown sample type for {wildcards.sample}")
 
+# Helper function to check if sample is BAM input
+def is_bam_input(sample):
+    """
+    Check if the sample input is a BAM file
+    Args:
+        sample: Sample name
+    Returns:
+        bool: True if input is BAM, False otherwise
+    """
+    return config["samples"][sample]["type"] == "bam"
+
 # Get appropriate callers based on sequencing type
 def get_callers():
+    """
+    Determine which SV callers to use based on sequencing type
+    Returns:
+        list: List of caller names to use
+    """
     seq_type = config["seq_type"]
     if seq_type == "short":
         return config["callers"].get("short_read", [])

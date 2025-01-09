@@ -1,0 +1,73 @@
+# General settings
+seq_type: "long_pacbio"
+threads: 12
+
+# Reference genome settings
+reference:
+  fasta: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/GRCh38.p13.genome.fa"
+  minimap2_index: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/minimap2_index/GRCh38.p13.genome.mmi"
+  tandem_repeats: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/tandem_repeats/human_GRCh38_no_alt_analysis_set.trf.bed"
+
+# Input samples
+samples:
+  test_sample:
+    type: "single"
+    fq1: "/projects/b1171/qgn1237/6_SV_VCF_merger/20241113_octopusv_final_benchmarking/Simulation_data/pacbio_simulated_100VAF/pacbio_fastq/test.fastq"
+    platform: "pacbio"
+
+# Container settings
+containers:
+  manta: "containers/images/manta.sif"
+  lumpy: "containers/images/lumpy-sv.sif"
+  debreak: "containers/images/debreak.sif"
+
+# SV callers selection
+callers:
+  long_read_pacbio:
+    - "cutesv"
+    - "sniffles"
+    - "svim"
+    - "pbsv"
+    - "debreak"
+    - "svdss"
+
+# Mapping parameters
+mapping:
+  short_read:
+    tool: "bwa-mem2"
+    extra_params: "-M -Y"
+  long_read_ont:
+    tool: "minimap2"
+    preset: "map-ont"
+    extra_params: "--MD -Y"
+  long_read_pacbio:
+    tool: "minimap2"
+    preset: "map-hifi"
+    extra_params: "--MD -Y"
+
+# BAM processing
+bam_processing:
+  remove_duplicates: true
+  min_mapping_quality: 20
+  filter_supplementary: true
+
+# OctopusV parameters
+octopusv:
+  correct:
+    pos_tolerance: 3
+  merge:
+    min_support: 2
+    max_distance: 50
+    max_length_ratio: 1.3
+    min_jaccard: 0.7
+    tra_delta: 50
+    tra_min_overlap: 0.5
+    tra_strand_consistency: true
+
+# Output settings
+output:
+  directory: "results"
+  cleanup_intermediates: true
+  generate_reports: true
+  upset_plot: true
+

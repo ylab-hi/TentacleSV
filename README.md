@@ -1,23 +1,110 @@
 # TentacleSV
 
-A Snakemake-based automated workflow for comprehensive structural variant (SV) analysis, built upon the powerful OctopusV toolkit. It streamlines the process of generating high-confidence structural variant call sets by integrating multiple SV callers and leveraging OctopusV's advanced BND correction and flexible merging capabilities.
+![PyPI](https://img.shields.io/badge/pypi-v1.0.0-blue)
+![Snakemake](https://img.shields.io/badge/snakemake-≥6.0.0-brightgreen.svg)
+![License](https://img.shields.io/badge/license-Apache--2.0-green)
+![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
+![Platform](https://img.shields.io/badge/platform-linux%20|%20osx-lightgrey)
+![GitHub Workflow Status](https://img.shields.io/badge/CI-passing-brightgreen)
 
-TentacleSV provides:
+A Snakemake-based automated workflow for generating high-confidence structural variant (SV) call sets, powered by [OctopusV](https://github.com/ylab-hi/octopusV). TentacleSV streamlines multi-caller SV analysis by integrating state-of-the-art callers with OctopusV's advanced BND correction and flexible merging capabilities.
 
-* **Versatile Sequencing Support** - Handles both short-read and long-read sequencing data, supporting direct FASTQ processing or pre-aligned BAM files
+## 🌟 Key Features
 
-* **Integrated Multi-caller Approach** - Incorporates major SV callers including Manta, Delly, Lumpy, SVaba for short reads, and CuteSV, PBSV, Sniffles2, SVIM, Debreak, SVDSS for long reads
+- **Universal Input Support**: Process both FASTQ files and pre-aligned BAM files
+- **Multi-platform Analysis**: Comprehensive support for short-read and long-read sequencing data
+- **Automated Pipeline**: From raw sequencing data to high-confidence SV call sets
+- **Powered by OctopusV**: Advanced BND correction and flexible merging strategies
 
-* **Advanced SV Processing** - Features automated BND correction through OctopusV, standardization of SV annotations, and flexible merging strategies with customizable support thresholds
+## 🔧 Supported Tools
 
-## Workflow Overview
+**Short-read Callers**:
+- Manta
+- Delly
+- Lumpy
+- SVaba
 
-TentacleSV implements a comprehensive pipeline that:
+**Long-read Callers**:
+- CuteSV
+- PBSV
+- Sniffles2
+- SVIM
+- Debreak
+- SVDSS
 
-1. Performs read alignment using BWA-MEM2 (short reads) or Minimap2 (long reads)
-2. Executes multiple SV callers in parallel
-3. Corrects breakend (BND) annotations using OctopusV
-4. Merges results with user-defined support criteria
-5. Generates a high-confidence SV call set
+## 📦 Installation
 
-All configurations are managed through a single YAML file, making it both user-friendly and highly customizable.
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/TentacleSV.git
+cd TentacleSV
+
+# Create conda environment
+mamba env create -f environment.yaml
+conda activate tentaclesv
+```
+
+## 🚀 Quick Start
+
+1. **Configure Your Analysis**
+
+Edit `config/config.yaml` to specify your input data and parameters:
+
+```yaml
+# For short-read data
+seq_type: "short"
+samples:
+  sample1:
+    type: "fastq"
+    fq1: "path/to/R1.fastq.gz"
+    fq2: "path/to/R2.fastq.gz"
+
+# For long-read data
+seq_type: "long_pacbio"  # or "long_ont"
+samples:
+  sample1:
+    type: "fastq"
+    fq1: "path/to/reads.fastq.gz"
+```
+
+2. **Run the Pipeline**
+
+```bash
+snakemake --cores 8 \
+          --use-conda \
+          --use-singularity \
+          --singularity-args "--bind /projects,/home" \
+          --conda-frontend mamba \
+          --rerun-incomplete \
+          --keep-going \
+          -s workflow/Snakefile
+```
+
+## 📊 Output
+
+TentacleSV generates:
+- High-confidence SV call set (`results/merged/{sample}.vcf`)
+- Quality metrics and logs
+- Optional UpSet plots showing caller overlap
+
+## 📝 Citation
+
+If you use TentacleSV in your research, please cite:
+
+```bibtex
+@software{TentacleSV2024,
+  author = {Qing Gao},
+  title = {TentacleSV: A Comprehensive SV Analysis Pipeline},
+  year = {2024},
+  publisher = {GitHub},
+  url = {https://github.com/ylab-hi/TentacleSV}
+}
+```
+
+## 📄 License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.

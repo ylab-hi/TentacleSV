@@ -1,37 +1,76 @@
+#--------------------
 # General settings
-seq_type: "short"  # Changed to short for NGS data
+#--------------------
+seq_type: "short"  # Options: "short", "long_pacbio", "long_ont"
 threads: 12
 
-# Reference genome settings (keeping the same as long-read config)
+#--------------------
+# Reference genome settings
+#--------------------
 reference:
-  fasta: "/projects/b1171/qgn1237/1_my_database/GRCh37_hs37d5/hs37d5.fa"
-  # Add BWA-MEM2 index path if available
-  bwa_index: "/projects/b1171/qgn1237/1_my_database/GRCh38_p13/GRCh38.p13.genome"
+  fasta: "/path/to/reference/genome.fa"
+  # For short reads
+  bwa_index: "/path/to/bwa/index/genome"
+  # For long reads
+  minimap2_index: "/path/to/minimap2/genome.mmi"
+  tandem_repeats: "/path/to/tandem_repeats.bed"
 
+#--------------------
 # Input samples
+#--------------------
 samples:
-  test_sample:
-    type: "bam"  
-    bam: "/projects/b1171/qgn1237/2_raw_data/20241126_NA12878_HG001_NGS_pacbio/NIST_NA12878_HG001_HiSeq_300x/merge_bam_40x/merged.bam"
-    platform: "illumina"  
+  # Example for paired-end short reads
+  sample1:
+    type: "fastq"
+    fq1: "/path/to/sample1_R1.fastq.gz"
+    fq2: "/path/to/sample1_R2.fastq.gz"
+    platform: "illumina"
+    
+  # Example for long reads
+  sample2:
+    type: "fastq"
+    fq1: "/path/to/sample2.fastq.gz"
+    platform: "pacbio"  # or "ont"
+    
+  # Example for pre-aligned BAM
+  sample3:
+    type: "bam"
+    bam: "/path/to/aligned.bam"
+    platform: "illumina"  # or "pacbio" or "ont"
 
-
-
+#--------------------
 # Container settings
+#--------------------
 containers:
-  manta: "containers/images/manta.sif"
   lumpy: "containers/images/lumpy-sv.sif"
   debreak: "containers/images/debreak.sif"
 
-# SV callers selection
+#--------------------
+# SV caller selection
+#--------------------
 callers:
-  short_read:  # Updated callers for short-read data
+  short_read:
     - "manta"
     - "delly"
     - "lumpy"
     - "svaba"
+  long_read_pacbio:
+    - "cutesv"
+    - "sniffles"
+    - "svim"
+    - "pbsv"
+    - "debreak"
+    - "svdss"
+  long_read_ont:
+    - "cutesv"
+    - "sniffles"
+    - "svim"
+    - "debreak"
+    - "svdss"
 
-# Mapping parameters (keeping both short and long read parameters)
+#--------------------
+# Mapping parameters
+#--------------------
 mapping:
   short_read:
     tool: "bwa-mem2"
@@ -45,13 +84,17 @@ mapping:
     preset: "map-hifi"
     extra_params: "--MD -Y"
 
+#--------------------
 # BAM processing
+#--------------------
 bam_processing:
   remove_duplicates: true
   min_mapping_quality: 20
   filter_supplementary: true
 
-# OctopusV parameters (keeping the same)
+#--------------------
+# OctopusV parameters
+#--------------------
 octopusv:
   correct:
     pos_tolerance: 3
@@ -64,22 +107,21 @@ octopusv:
     tra_min_overlap: 0.5
     tra_strand_consistency: true
 
-# Output settings (keeping the same)
+#--------------------
+# Output settings
+#--------------------
 output:
   directory: "results"
   cleanup_intermediates: true
   generate_reports: true
   upset_plot: true
 
-
-# Detailed parameters for each SV caller
+#--------------------
+# Caller-specific parameters
+#--------------------
 # Manta parameters
 manta:
-  min_candidate_spanning_count: 3
-  min_candidate_size: 8
-  min_scored_size: 50
-  timeout_minutes: 60
-  memory_gb: 16
+  bin_path: "tools/manta/manta-1.6.0.centos6_x86_64/bin"
 
 # Delly parameters
 delly:

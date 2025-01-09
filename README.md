@@ -2,7 +2,7 @@
 
 ![PyPI](https://img.shields.io/badge/pypi-v1.0.0-blue)
 ![Snakemake](https://img.shields.io/badge/snakemake-≥6.0.0-brightgreen.svg)
-![License](https://img.shields.io/badge/license-Apache--2.0-green)
+![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.10%20|%203.11%20|%203.12-blue)
 ![Platform](https://img.shields.io/badge/platform-linux%20|%20osx-lightgrey)
 ![GitHub Workflow Status](https://img.shields.io/badge/CI-passing-brightgreen)
@@ -91,19 +91,10 @@ TentacleSV generates:
 
 If you use TentacleSV in your research, please cite:
 
-```bibtex
-@software{TentacleSV2024,
-  author = {Qing Gao},
-  title = {TentacleSV: A Comprehensive SV Analysis Pipeline},
-  year = {2024},
-  publisher = {GitHub},
-  url = {https://github.com/ylab-hi/TentacleSV}
-}
-```
 
 ## 📄 License
 
-This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
